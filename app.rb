@@ -23,6 +23,7 @@ helpers do
 
   def clear_guest_information
   	session.delete(:guest_token)
+  	@guest.delete if @guest
   end
 
   def store_user_in_session(user)
@@ -52,7 +53,11 @@ after do
 		session[:user_active_time] = Time.now
 		@user.save
 	end
-	@guest.touch if @guest.try(:reload) && session[:guest_token]
+	begin
+		@guest.touch if @guest.try(:reload) && session[:guest_token]
+	rescue ActiveRecord::RecordNotFound
+		# some kind of race condition could happen here
+	end
 end
 
 get '/live_users' do
