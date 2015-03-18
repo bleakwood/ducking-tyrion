@@ -1,0 +1,39 @@
+<html>
+<head>
+	<script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+	<script type="text/javascript">
+	   $(document).ready(function(){
+	   	$.get( "/live_users", function( data ) {
+		  $(".users-count").html(data.live_users);
+		  $(".guests-count").html(data.live_guests);
+		});
+	   });
+</script>
+</head>
+
+<body>
+<h1>一个简单app</h1>
+
+<% if @message %>
+  	<h1><%= @message %></h1>
+<% end %>
+<% if @user %>
+	<p><%= @user.username %>谢谢你登录了我们网站！你已经登录了 <%= @user.sign_in_count %> 次了，总共登录时间是 <%= @time_elapsed %> 分钟了。</p>
+<% else %>
+	<p>你好，陌生人！你没有登录，或者你还没有注册，但是你已经浏览这个页面 <%= @time_elapsed %> 分钟了。</p>
+<% end %>
+
+<p>现在总共有 <span class="users-count"></span> 个注册用户在查看这个网站，有 <span class="guests-count"></span> 个陌生人在查看这个网站 </p>
+
+<% unless @user %>
+
+	<form action="/sign_up">
+	    <input type="submit" value="注册">
+	</form>
+	<form action="/sign_in">
+	    <input type="submit" value="登录">
+	</form>
+
+<% end %>
+</body>
+</html>

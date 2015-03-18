@@ -1,0 +1,14 @@
+<h1>登录</h1>
+<% if @message %>
+  	<h1><%= @message %></h1>
+<% end %>
+<form action="/sign_in" method="post">
+	<label for="username">用户名</label>
+  <input id="username" name="username" type="text" />
+  <br />
+  <label for="password">密码</label>
+  <input type="password" name="password">
+  <br />
+  <input type="submit" value="登录">
+
+</form>
