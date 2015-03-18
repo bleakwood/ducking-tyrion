@@ -14,8 +14,9 @@ enable :sessions
 helpers do
   def set_elapsed_time
   	if @user
-  		@time_elapsed = (@user.total_active_time / 60).floor
+  		@time_elapsed = (@user.reload.total_active_time / 60).floor
   	else
+  		session[:first_visit_time] = Time.now unless session[:first_visit_time]
   		@time_elapsed = ((Time.now - session[:first_visit_time]) / 60).floor
   	end
   end
@@ -36,6 +37,7 @@ end
 before do
 	return if request.xhr?
 	@user = User.find_by_id(session[:user_id]) if session[:user_id]
+	set_elapsed_time
 	if (session[:guest_token].nil? && !@user)
 		guest = Guest.create(guest_token: Guest.get_new_token)
 		session[:guest_token] = guest.guest_token
@@ -46,7 +48,7 @@ end
 after do
 	return if request.xhr?
 	if @user
-		@user.total_active_time += Time.now - session[:user_active_time]
+		@user.total_active_time += Time.now - session[:user_active_time] unless session[:user_active_time].nil?
 		session[:user_active_time] = Time.now
 		@user.save
 	end
@@ -60,8 +62,6 @@ get '/live_users' do
 end
 
 get '/' do
-  session[:first_visit_time] = Time.now unless session[:first_visit_time]
-  set_elapsed_time
   erb :"index"
 end
 
@@ -73,7 +73,6 @@ post '/sign_up' do
 	if user = User.create(username: params[:username], encrypted_password: User.encrypt_password(params[:password]))
 		@message = "注册成功"
 		store_user_in_session(user)
-		set_elapsed_time
 		erb :"index"
 	else
 		erb :"sign_up"
@@ -88,7 +87,6 @@ post '/sign_in' do
 	user = User.find_by_username(params[:username])
 	if user && user.authenticate(params[:password])
 		store_user_in_session(user)
-		set_elapsed_time
 		erb :"index"
 	else
 		@message = "用户名或密码错误"
